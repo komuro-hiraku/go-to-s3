@@ -17,6 +17,10 @@ import (
 
 var lettersRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 
+const(
+	EXIT_PROCESS = "EXIT_PROCESS"
+)
+
 type ParUpload struct {
 	Bucket string
 	Key string
@@ -62,10 +66,17 @@ func (p *ParUpload) Upload(paralells, uploadRecordCount int, timeoutMin int64) {
 
 	timeout := time.After(time.Duration(timeoutMin) * time.Minute)
 	resultCount := 0
+	exitProcessCount := 0
 	for {
+
+		if exitProcessCount >= paralells {
+			fmt.Printf("\nFinished: Add %d\n", resultCount)
+			return
+		}
+
 		// TimeoutもChannelらしい
 		select {
-		case _, ok := <-message:
+		case msg, ok := <-message:
 			if !ok {
 				fmt.Printf("%T\n", ok)
 				return	
@@ -75,6 +86,10 @@ func (p *ParUpload) Upload(paralells, uploadRecordCount int, timeoutMin int64) {
 				fmt.Printf(".")
 			}
 			resultCount++
+
+			if msg == EXIT_PROCESS {
+				exitProcessCount++
+			}
 		case <-timeout:
 			fmt.Printf("Finished: Add %d\n", resultCount)
 			return
@@ -106,6 +121,7 @@ func execUpload(ch chan string, bucket, key string, count int, uploader *s3manag
 		time.Sleep(time.Millisecond * 10)	// 10ms Sleep
 		resultCount++
 	}
+	ch <- EXIT_PROCESS
 	return resultCount, nil
 }
 
