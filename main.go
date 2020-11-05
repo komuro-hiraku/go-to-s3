@@ -29,9 +29,6 @@ func main() {
 	if len(key) == 0 {
 		panic(fmt.Errorf("You MUST input key. %s", key))
 	}
-	if len(roleArn) == 0 {
-		panic(fmt.Errorf("You MUST input Assume Role ARN. %s", roleArn))
-	}
 
 	// Create Upload
 	p := &s3.ParUpload{

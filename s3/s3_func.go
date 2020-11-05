@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"github.com/google/uuid"
+	"github.com/labstack/gommon/log"
 )
 
 var lettersRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
@@ -30,7 +31,14 @@ func (p *ParUpload) Upload(paralells, uploadRecordCount int, timeoutMin int64) {
 	defaultSession := session.New(&config)
 
 	// Assume role
-	sCreds := stscreds.NewCredentials(defaultSession, p.Arn)
+	var sCreds *credentials.Credentials
+
+	if len(p.Arn) != 0 {
+		sCreds = stscreds.NewCredentials(defaultSession, p.Arn)
+	} else {
+		log.Info("set default Credentials")
+		sCreds = creds	// defaultのまま
+	}
 	sConfig := aws.Config{
 		Region: aws.String("ap-northeast-1"), 
 		Credentials: sCreds, 
