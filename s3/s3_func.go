@@ -37,7 +37,7 @@ func (p *ParUpload) Upload(paralells, uploadRecordCount int, timeoutMin int64) {
 		sCreds = stscreds.NewCredentials(defaultSession, p.Arn)
 	} else {
 		log.Info("set default Credentials")
-		sCreds = creds	// defaultのまま
+		sCreds = aws.NewConfig().WithRegion("ap-northeast-1").Credentials
 	}
 	sConfig := aws.Config{
 		Region: aws.String("ap-northeast-1"), 
